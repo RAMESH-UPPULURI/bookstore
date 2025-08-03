@@ -1,11 +1,11 @@
 package bookstore.stepdefs;
 
 import bookstore.config.APIConfig;
+import bookstore.utils.FakerDataUtils;
 import io.cucumber.java.en.*;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.Assert;
-import com.github.javafaker.Faker;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +13,6 @@ public class BookstoreApiSteps {
     private Response response;
     private String accessToken;
     private int createdBookId;
-    private Faker faker = new Faker();
     private String currentEmail;
     private String currentPassword;
     private Map<String, String> userCredentials = new HashMap<>();
@@ -21,8 +20,10 @@ public class BookstoreApiSteps {
     private long operationEndTime;
 
     static {
-        APIConfig.setupRestAssured();
+        APIConfig.resetRestAssured();
         APIConfig.enableConsoleLogging(); // Enable console logging for requests and responses
+        APIConfig.enableFileLogging("target/bookstore_api_test.log"); // Enable file logging for requests and responses
+        APIConfig.printEnvironmentInfo(); // Print environment information
     }
 
     @When("I send a GET request to {string}")
@@ -60,7 +61,7 @@ public class BookstoreApiSteps {
 
     @When("I sign up with a random email and password {string}")
     public void i_sign_up_with_random_email_and_password(String password) {
-        currentEmail = faker.internet().emailAddress();
+        currentEmail = FakerDataUtils.generateRandomEmail();
         currentPassword = password;
 
         Map<String, String> body = new HashMap<>();
@@ -83,13 +84,13 @@ public class BookstoreApiSteps {
     public void i_sign_up_with_email_and_password(String email, String password) {
         // Handle RANDOM_EMAIL placeholder
         if ("RANDOM_EMAIL".equals(email)) {
-            email = faker.internet().emailAddress();
+            email = FakerDataUtils.generateRandomEmail();
             currentEmail = email;
         }
 
         // Handle RANDOM_PASSWORD placeholder
         if ("RANDOM_PASSWORD".equals(password)) {
-            password = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
+            password = FakerDataUtils.generateRandomPassword();
             currentPassword = password;
         }
 
@@ -131,12 +132,12 @@ public class BookstoreApiSteps {
     public void i_login_with_email_and_password(String email, String password) {
         // Handle RANDOM_EMAIL placeholder - use stored email if available
         if ("RANDOM_EMAIL".equals(email)) {
-            email = userCredentials.getOrDefault("email", faker.internet().emailAddress());
+            email = userCredentials.getOrDefault("email", FakerDataUtils.generateRandomEmail());
         }
 
         // Handle RANDOM_PASSWORD placeholder - use stored password if available
         if ("RANDOM_PASSWORD".equals(password)) {
-            password = userCredentials.getOrDefault("password", faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH));
+            password = userCredentials.getOrDefault("password", FakerDataUtils.generateRandomPassword());
         }
 
         Map<String, String> body = new HashMap<>();
@@ -158,8 +159,8 @@ public class BookstoreApiSteps {
 
     @When("I login with a random email and password")
     public void i_login_with_random_email_and_password() {
-        String randomEmail = faker.internet().emailAddress();
-        String randomPassword = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
+        String randomEmail = FakerDataUtils.generateRandomEmail();
+        String randomPassword = FakerDataUtils.generateRandomPassword();
 
         i_login_with_email_and_password(randomEmail, randomPassword);
     }
@@ -168,8 +169,8 @@ public class BookstoreApiSteps {
     public void i_am_logged_in_with_random_credentials() {
         operationStartTime = System.currentTimeMillis(); // Start timing
         // Generate random credentials
-        String email = faker.internet().emailAddress();
-        String password = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
+        String email = FakerDataUtils.generateRandomEmail();
+        String password = FakerDataUtils.generateRandomPassword();
 
         // Sign up first
         i_sign_up_with_email_and_password(email, password);
@@ -193,10 +194,10 @@ public class BookstoreApiSteps {
     public void i_am_logged_in_as_with_password(String email, String password) {
         // Handle placeholders
         if ("RANDOM_EMAIL".equals(email)) {
-            email = faker.internet().emailAddress();
+            email = FakerDataUtils.generateRandomEmail();
         }
         if ("RANDOM_PASSWORD".equals(password)) {
-            password = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
+            password = FakerDataUtils.generateRandomPassword();
         }
 
         // Always sign up the user before login to ensure the user exists
@@ -219,18 +220,18 @@ public class BookstoreApiSteps {
     public void i_create_a_book_with_title_and_author(String title, String author) {
         // Handle random placeholders
         if ("RANDOM_TITLE".equals(title)) {
-            title = faker.book().title();
+            title = FakerDataUtils.generateRandomBookTitle();
         }
         if ("RANDOM_AUTHOR".equals(author)) {
-            author = faker.book().author();
+            author = FakerDataUtils.generateRandomAuthor();
         }
 
         // Create complete book payload matching the working API structure
         Map<String, Object> body = new HashMap<>();
         body.put("name", title); // Using "name" instead of "title" to match working API
         body.put("author", author);
-        body.put("published_year", faker.number().numberBetween(1900, 2024));
-        body.put("book_summary", faker.lorem().sentence(10));
+        body.put("published_year", FakerDataUtils.generateRandomYear());
+        body.put("book_summary", FakerDataUtils.generateRandomSentence());
 
         System.out.println("[STEP] Creating book with name: " + title + ", author: " + author);
         System.out.println("[REQUEST BODY] " + body);
@@ -250,8 +251,8 @@ public class BookstoreApiSteps {
 
     @When("I create a book with random title and author")
     public void i_create_a_book_with_random_title_and_author() {
-        String randomTitle = faker.book().title();
-        String randomAuthor = faker.book().author();
+        String randomTitle = FakerDataUtils.generateRandomBookTitle();
+        String randomAuthor = FakerDataUtils.generateRandomAuthor();
 
         i_create_a_book_with_title_and_author(randomTitle, randomAuthor);
     }
@@ -267,7 +268,7 @@ public class BookstoreApiSteps {
     @When("I update the book title to {string}")
     public void i_update_the_book_title_to(String newTitle) {
         if ("RANDOM_TITLE".equals(newTitle)) {
-            newTitle = faker.book().title();
+            newTitle = FakerDataUtils.generateRandomBookTitle();
         }
 
         Map<String, Object> body = new HashMap<>();
@@ -284,7 +285,7 @@ public class BookstoreApiSteps {
 
     @When("I update the book with random title")
     public void i_update_the_book_with_random_title() {
-        String randomTitle = faker.book().title();
+        String randomTitle = FakerDataUtils.generateRandomBookTitle();
         i_update_the_book_title_to(randomTitle);
     }
 
@@ -304,14 +305,14 @@ public class BookstoreApiSteps {
 
     @When("I try to create a book without authentication")
     public void i_try_to_create_book_without_authentication() {
-        String title = faker.book().title();
-        String author = faker.book().author();
+        String title = FakerDataUtils.generateRandomBookTitle();
+        String author = FakerDataUtils.generateRandomAuthor();
 
         Map<String, Object> body = new HashMap<>();
         body.put("name", title);
         body.put("author", author);
-        body.put("published_year", faker.number().numberBetween(1900, 2024));
-        body.put("book_summary", faker.lorem().sentence(10));
+        body.put("published_year", FakerDataUtils.generateRandomYear());
+        body.put("book_summary", FakerDataUtils.generateRandomSentence());
 
         System.out.println("[STEP] Creating book without auth - name: " + title + ", author: " + author);
         System.out.println("[REQUEST BODY] " + body);
@@ -319,11 +320,6 @@ public class BookstoreApiSteps {
                 .contentType(APIConfig.CONTENT_TYPE_JSON)
                 .body(body)
                 .post(APIConfig.BOOKS_ENDPOINT);
-    }
-
-    // Utility method to get current faker instance (for debugging)
-    public Faker getFaker() {
-        return faker;
     }
 
     // Method to get stored credentials (for debugging)

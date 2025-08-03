@@ -89,21 +89,6 @@ public class APIConfig {
     }
 
     /**
-     * Reset RestAssured configuration to defaults
-     */
-    public static void resetRestAssured() {
-        RestAssured.reset();
-        setupRestAssured();
-    }
-
-    /**
-     * Get full endpoint URL
-     */
-    public static String getFullEndpointUrl(String endpoint) {
-        return BASE_URI + ":" + DEFAULT_PORT + BASE_PATH + endpoint;
-    }
-
-    /**
      * Get authorization header value
      */
     public static String getBearerToken(String accessToken) {
@@ -111,20 +96,11 @@ public class APIConfig {
     }
 
     /**
-     * Validate environment configuration
+     * Reset RestAssured configuration to defaults
      */
-    public static boolean validateEnvironmentConfig() {
-        try {
-            RestAssured.given()
-                    .when()
-                    .get(HEALTH_ENDPOINT)
-                    .then()
-                    .statusCode(200);
-            return true;
-        } catch (Exception e) {
-            System.err.println("Environment validation failed: " + e.getMessage());
-            return false;
-        }
+    public static void resetRestAssured() {
+        RestAssured.reset();
+        setupRestAssured();
     }
 
     /**
@@ -135,7 +111,6 @@ public class APIConfig {
         System.out.println("Base URI: " + BASE_URI);
         System.out.println("Base Path: " + BASE_PATH);
         System.out.println("Port: " + DEFAULT_PORT);
-        System.out.println("Full Base URL: " + getFullEndpointUrl(""));
         System.out.println("Connection Timeout: " + CONNECTION_TIMEOUT + "ms");
         System.out.println("Socket Timeout: " + SOCKET_TIMEOUT + "ms");
         System.out.println("=========================");
