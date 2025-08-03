@@ -128,3 +128,19 @@ SOCKET_TIMEOUT = 60000ms
 
 ### Cucumber Configuration (cucumber.properties)
 ```properties
+## Testing Strategy
+
+### Approach to Writing Test Flows
+Test flows were designed using BDD principles with Cucumber, focusing on realistic user journeys and edge cases. Each scenario in `bookstore.feature` represents a distinct API workflow, including authentication, CRUD operations, boundary conditions, security, and performance. Placeholders like `RANDOM_EMAIL` and `RANDOM_TITLE` leverage JavaFaker for dynamic data, ensuring tests are not brittle and can run repeatedly with fresh data.
+
+### Reliability and Maintainability
+- **Reusable Step Definitions:** Step definitions in `BookstoreApiSteps.java` are modular, supporting multiple scenarios and reducing duplication.
+- **Dynamic Data:** Using JavaFaker and utility methods ensures tests do not rely on hardcoded values, minimizing flakiness due to data collisions or stale state.
+- **Clear Structure:** Features, step definitions, and hooks are organized by domain (auth, books, etc.), making it easy to extend or update tests as the API evolves.
+- **Assertions and Logging:** Each step logs requests and responses, and assertions provide detailed error messages for easier debugging.
+
+### Challenges and Solutions
+- **Dynamic Data Management:** Ensuring unique data for each test run was critical. This was solved by integrating JavaFaker and storing generated credentials for reuse within scenarios.
+- **Stateful Operations:** Some flows require chaining operations (e.g., create, update, delete book). State (like book ID or access token) is stored in step definition fields to maintain context across steps.
+- **API Changes:** Adapting to API changes (e.g., field names, error messages) required abstracting endpoints and payloads in config/util classes, making updates easier and reducing maintenance overhead.
+- **Authentication Handling:** To test both authenticated and unauthenticated flows, step definitions conditionally include tokens and credentials, ensuring coverage of both positive and negative cases.

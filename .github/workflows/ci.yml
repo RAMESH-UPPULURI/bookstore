@@ -1,0 +1,109 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          cd bookstore
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start Bookstore API (background)
+        run: |
+          cd bookstore
+          nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
+        shell: bash
+
+      - name: Wait for API to be ready
+        run: |
+          sleep 10
+          curl --fail http://localhost:8000/health
+
+      - name: Build and test Java project
+        run: |
+          cd bookstore-api-automation
+          mvn clean test
+
+      - name: Report code coverage
+        run: |
+          cd bookstore-api-automation
+          mvn jacoco:report
+        continue-on-error: true
+
+      - name: Upload Cucumber and Jacoco reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            bookstore-api-automation/target/cucumber-reports/
+            bookstore-api-automation/target/site/jacoco/
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Python dependencies
+        run: |
+          cd bookstore
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start Bookstore API (background)
+        run: |
+          cd bookstore
+          nohup uvicorn main:app --host 0.0.0.0 --port 8000 &
+        shell: bash
+
+      - name: Wait for API to be ready
+        run: |
+          sleep 10
+          curl --fail http://localhost:8000/health
+
+      - name: Run integration tests
+        run: |
+          cd bookstore-api-automation
+          mvn clean verify -Pintegration
+
+      - name: Upload integration test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-reports
+          path: bookstore-api-automation/target/cucumber-reports/
