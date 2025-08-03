@@ -1,4 +1,4 @@
-# Bookstore API Automation - BDD Cucumber with Faker
+# Bookstore API Automation - BDD Cucumber with REST Assured
 
 ## Project Structure
 
