@@ -1,6 +1,6 @@
 # Bookstore API Automation - BDD Cucumber with Faker
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 bookstore-api-automation/

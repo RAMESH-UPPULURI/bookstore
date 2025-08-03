@@ -10,8 +10,8 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>Bookstore API Automation with Cucumber and Faker</name>
-    <description>Assignment - BDD API Testing Framework using Cucumber, RestAssured (RAMESH UPPULURI) </description>
+    <name>Bookstore API Automation with BDD Cucumber and RestAssured</name>
+    <description>JKTech Assignment - API Testing Framework using Cucumber, RestAssured (RAMESH UPPULURI) </description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

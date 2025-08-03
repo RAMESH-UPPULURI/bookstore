@@ -35,11 +35,6 @@ public class APIConfig {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String BEARER_TOKEN_PREFIX = "Bearer ";
 
-    // Test Data Constants
-    public static final String DEFAULT_PASSWORD = "testpass123";
-    public static final int MIN_PASSWORD_LENGTH = 8;
-    public static final int MAX_PASSWORD_LENGTH = 16;
-
     static {
         setupRestAssured();
     }

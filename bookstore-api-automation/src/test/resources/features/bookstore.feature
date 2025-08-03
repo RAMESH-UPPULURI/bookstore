@@ -9,7 +9,7 @@ Feature: Enhanced Bookstore API Testing with Faker Data
 
   @smoke @health
   Scenario: API Health Check Verification
-    When I send a GET request to "/health"
+    When I send a GET request to Health Endpoint
     Then the response code should be 200
     And the response should contain "status" with value "up"
 

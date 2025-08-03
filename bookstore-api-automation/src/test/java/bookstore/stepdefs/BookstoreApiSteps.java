@@ -26,10 +26,10 @@ public class BookstoreApiSteps {
         APIConfig.printEnvironmentInfo(); // Print environment information
     }
 
-    @When("I send a GET request to {string}")
-    public void i_send_a_get_request_to(String endpoint) {
-        System.out.println("[STEP] Sending GET request to: " + endpoint);
-        response = RestAssured.get(endpoint);
+    @When("I send a GET request to Health Endpoint")
+    public void iSendAGETRequestToHealthEndpoint() {
+        System.out.println("[STEP] Sending GET request to: " + APIConfig.HEALTH_ENDPOINT);
+        response = RestAssured.get(APIConfig.HEALTH_ENDPOINT);
     }
 
     @Then("the response code should be {int}")
@@ -326,5 +326,6 @@ public class BookstoreApiSteps {
     public Map<String, String> getStoredCredentials() {
         return userCredentials;
     }
+
 }
 
