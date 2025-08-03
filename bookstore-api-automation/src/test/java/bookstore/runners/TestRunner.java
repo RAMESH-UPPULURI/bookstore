@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
         glue = {"bookstore.stepdefs"},
         plugin = {
                 "pretty",
-                "html:target/cucumber-reports.html",
+                "html:target/cucumber-reports/Cucumber.html",
                 "json:target/cucumber-reports/Cucumber.json",
                 "junit:target/cucumber-reports/Cucumber.xml"
         },
