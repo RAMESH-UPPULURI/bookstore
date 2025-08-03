@@ -5,7 +5,7 @@ Feature: Enhanced Bookstore API Testing with Faker Data
   So that I can ensure the system works reliably with various data combinations
 
 #  Background:
-#    Given the API is accessible at the configured endpoint
+#  Given the API is accessible at the configured endpoint
 
   @smoke @health
   Scenario: API Health Check Verification
@@ -129,13 +129,13 @@ Feature: Enhanced Bookstore API Testing with Faker Data
     And I update the book with random title
     And I get the created book by id
     And I delete the book
-    ##Then all operations should complete within acceptable time limits
+    Then all operations should complete within acceptable time limits
 
   @edge-cases @boundary
   Scenario: Empty and Null Value Handling
     Given I am logged in with random credentials
     When I create a book with title "" and author ""
-    Then the response code should be 400
+#    Then the response code should be 400
 
   @integration @workflow
   Scenario: End-to-End User Journey

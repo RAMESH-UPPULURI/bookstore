@@ -17,6 +17,8 @@ public class BookstoreApiSteps {
     private String currentEmail;
     private String currentPassword;
     private Map<String, String> userCredentials = new HashMap<>();
+    private long operationStartTime;
+    private long operationEndTime;
 
     static {
         APIConfig.setupRestAssured();
@@ -164,6 +166,7 @@ public class BookstoreApiSteps {
 
     @Given("I am logged in with random credentials")
     public void i_am_logged_in_with_random_credentials() {
+        operationStartTime = System.currentTimeMillis(); // Start timing
         // Generate random credentials
         String email = faker.internet().emailAddress();
         String password = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
@@ -175,6 +178,15 @@ public class BookstoreApiSteps {
         // Then login
         i_login_with_email_and_password(email, password);
         Assert.assertNotNull("Login failed - no access token received", accessToken);
+    }
+
+    @Then("all operations should complete within acceptable time limits")
+    public void all_operations_should_complete_within_acceptable_time_limits() {
+        operationEndTime = System.currentTimeMillis();
+        long elapsedMillis = operationEndTime - operationStartTime;
+        System.out.println("[PERFORMANCE] Total elapsed time: " + elapsedMillis + " ms");
+        // Acceptable time limit: 2000 ms (2 seconds)
+        Assert.assertTrue("Operations took too long: " + elapsedMillis + " ms", elapsedMillis <= 2000);
     }
 
     @Given("I am logged in as {string} with password {string}")
@@ -319,3 +331,4 @@ public class BookstoreApiSteps {
         return userCredentials;
     }
 }
+
