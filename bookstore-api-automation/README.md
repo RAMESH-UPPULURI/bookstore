@@ -35,7 +35,7 @@ bookstore-api-automation/
 ### Prerequisites
 - Java 11 or higher
 - Maven 3.6 or higher
-- Your Bookstore API running on `http://localhost:8000`
+- Bookstore API running on `http://localhost:8000`
 
 ### Installation
 1. Clone or create the project with the provided files
@@ -128,7 +128,10 @@ SOCKET_TIMEOUT = 60000ms
 
 ### Cucumber Configuration (cucumber.properties)
 ```properties
-## Testing Strategy
+```
+
+
+### Testing Strategy
 
 ### Approach to Writing Test Flows
 Test flows were designed using BDD principles with Cucumber, focusing on realistic user journeys and edge cases. Each scenario in `bookstore.feature` represents a distinct API workflow, including authentication, CRUD operations, boundary conditions, security, and performance. Placeholders like `RANDOM_EMAIL` and `RANDOM_TITLE` leverage JavaFaker for dynamic data, ensuring tests are not brittle and can run repeatedly with fresh data.
