@@ -31,7 +31,7 @@ Feature: Enhanced Bookstore API Testing with Faker Data
   Scenario: Prevent Duplicate User Registration
     When I sign up with email "RANDOM_EMAIL" and password "testpass123"
     Then the response code should be 200
-    When I sign up with email "RANDOM_EMAIL" and password "testpass123"
+    When I sign up with same registered email and password "testpass123"
     Then the response code should be 400
     And the response should contain "detail" with value "Email already registered"
 
@@ -109,9 +109,6 @@ Feature: Enhanced Bookstore API Testing with Faker Data
     When I create a book with title "RANDOM_TITLE" and author "RANDOM_AUTHOR"
     Then the response code should be 200
 
-
-
-
   @security @negative
   Scenario Outline: Security Testing with Malicious Input
     Given I am logged in with random credentials
@@ -154,7 +151,7 @@ Feature: Enhanced Bookstore API Testing with Faker Data
     Then the response code should be 200
     When I get the created book by id
     Then the response code should be 200
-    And the response should contain "title" with value "My Updated Journey Book"
+    And the response should contain "name" with value "My Updated Journey Book"
     When I delete the book
     Then the response code should be 200
     When I get the deleted book by id

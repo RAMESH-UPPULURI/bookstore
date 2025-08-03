@@ -1,9 +1,10 @@
 package bookstore.stepdefs;
 
+import bookstore.config.APIConfig;
 import io.cucumber.java.en.*;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.testng.Assert;
+import org.junit.Assert;
 import com.github.javafaker.Faker;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +19,8 @@ public class BookstoreApiSteps {
     private Map<String, String> userCredentials = new HashMap<>();
 
     static {
-        RestAssured.baseURI = "http://localhost:8000";
+        APIConfig.setupRestAssured();
+        APIConfig.enableConsoleLogging(); // Enable console logging for requests and responses
     }
 
     @When("I send a GET request to {string}")
@@ -33,7 +35,8 @@ public class BookstoreApiSteps {
         if (response.getStatusCode() != code) {
             System.out.println("[ERROR] Response body: " + response.asString());
         }
-        Assert.assertEquals(response.getStatusCode(), code, "Expected status code " + code + " but got " + response.getStatusCode() + ". Response: " + response.asString());
+        Assert.assertEquals("Expected status code " + code + " but got " + response.getStatusCode() + ". Response: " + response.asString(),
+                code, response.getStatusCode());
     }
 
     @And("the response should contain {string} with value {string}")
@@ -43,13 +46,14 @@ public class BookstoreApiSteps {
         if (!value.equals(actual)) {
             System.out.println("[ERROR] Response body: " + response.asString());
         }
-        Assert.assertEquals(actual, value, "Expected key '" + key + "' to have value '" + value + "' but got '" + actual + "'. Response: " + response.asString());
+        Assert.assertEquals("Expected key '" + key + "' to have value '" + value + "' but got '" + actual + "'. Response: " + response.asString(),
+                value, actual);
     }
 
     @Then("the response should contain {string}")
     public void the_response_should_contain(String key) {
         System.out.println("[STEP] Asserting response contains key '" + key + "'");
-        Assert.assertNotNull(response.jsonPath().getString(key), "Response does not contain key: " + key);
+        Assert.assertNotNull("Response does not contain key: " + key, response.jsonPath().getString(key));
     }
 
     @When("I sign up with a random email and password {string}")
@@ -63,7 +67,10 @@ public class BookstoreApiSteps {
 
         System.out.println("[STEP] Signing up with random email: " + currentEmail);
         System.out.println("[REQUEST BODY] " + body);
-        response = RestAssured.given().contentType("application/json").body(body).post("/signup");
+        response = RestAssured.given()
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
+                .body(body)
+                .post(APIConfig.SIGNUP_ENDPOINT);
 
         // Store credentials for later use
         userCredentials.put("email", currentEmail);
@@ -80,7 +87,7 @@ public class BookstoreApiSteps {
 
         // Handle RANDOM_PASSWORD placeholder
         if ("RANDOM_PASSWORD".equals(password)) {
-            password = faker.internet().password(8, 16);
+            password = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
             currentPassword = password;
         }
 
@@ -90,10 +97,31 @@ public class BookstoreApiSteps {
 
         System.out.println("[STEP] Signing up with email: " + email);
         System.out.println("[REQUEST BODY] " + body);
-        response = RestAssured.given().contentType("application/json").body(body).post("/signup");
+        response = RestAssured.given()
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
+                .body(body)
+                .post(APIConfig.SIGNUP_ENDPOINT);
 
         // Store credentials for later use
         userCredentials.put("email", email);
+        userCredentials.put("password", password);
+    }
+
+    @When("I sign up with same registered email and password {string}")
+    public void iSignUpWithSameRegisteredEmailAndPassword(String password) {
+        Map<String, String> body = new HashMap<>();
+        body.put("email", currentEmail);
+        body.put("password", password);
+
+        System.out.println("[STEP] Signing up with email: " + currentEmail);
+        System.out.println("[REQUEST BODY] " + body);
+        response = RestAssured.given()
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
+                .body(body)
+                .post(APIConfig.SIGNUP_ENDPOINT);
+
+        // Store credentials for later use
+        userCredentials.put("email", currentEmail);
         userCredentials.put("password", password);
     }
 
@@ -106,7 +134,7 @@ public class BookstoreApiSteps {
 
         // Handle RANDOM_PASSWORD placeholder - use stored password if available
         if ("RANDOM_PASSWORD".equals(password)) {
-            password = userCredentials.getOrDefault("password", faker.internet().password(8, 16));
+            password = userCredentials.getOrDefault("password", faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH));
         }
 
         Map<String, String> body = new HashMap<>();
@@ -115,7 +143,10 @@ public class BookstoreApiSteps {
 
         System.out.println("[STEP] Logging in with email: " + email);
         System.out.println("[REQUEST BODY] " + body);
-        response = RestAssured.given().contentType("application/json").body(body).post("/login");
+        response = RestAssured.given()
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
+                .body(body)
+                .post(APIConfig.LOGIN_ENDPOINT);
 
         if (response.getStatusCode() == 200) {
             accessToken = response.jsonPath().getString("access_token");
@@ -126,7 +157,7 @@ public class BookstoreApiSteps {
     @When("I login with a random email and password")
     public void i_login_with_random_email_and_password() {
         String randomEmail = faker.internet().emailAddress();
-        String randomPassword = faker.internet().password(8, 16);
+        String randomPassword = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
 
         i_login_with_email_and_password(randomEmail, randomPassword);
     }
@@ -135,15 +166,15 @@ public class BookstoreApiSteps {
     public void i_am_logged_in_with_random_credentials() {
         // Generate random credentials
         String email = faker.internet().emailAddress();
-        String password = faker.internet().password(8, 16);
+        String password = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
 
         // Sign up first
         i_sign_up_with_email_and_password(email, password);
-        Assert.assertEquals(response.getStatusCode(), 200, "Signup failed");
+        Assert.assertEquals("Signup failed", 200, response.getStatusCode());
 
         // Then login
         i_login_with_email_and_password(email, password);
-        Assert.assertNotNull(accessToken, "Login failed - no access token received");
+        Assert.assertNotNull("Login failed - no access token received", accessToken);
     }
 
     @Given("I am logged in as {string} with password {string}")
@@ -153,7 +184,7 @@ public class BookstoreApiSteps {
             email = faker.internet().emailAddress();
         }
         if ("RANDOM_PASSWORD".equals(password)) {
-            password = faker.internet().password(8, 16);
+            password = faker.internet().password(APIConfig.MIN_PASSWORD_LENGTH, APIConfig.MAX_PASSWORD_LENGTH);
         }
 
         // Always sign up the user before login to ensure the user exists
@@ -162,7 +193,10 @@ public class BookstoreApiSteps {
         body.put("password", password);
 
         System.out.println("[STEP] (Auto) Signing up with email: " + email);
-        RestAssured.given().contentType("application/json").body(body).post("/signup");
+        RestAssured.given()
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
+                .body(body)
+                .post(APIConfig.SIGNUP_ENDPOINT);
 
         System.out.println("[STEP] Logging in as: " + email);
         i_login_with_email_and_password(email, password);
@@ -176,23 +210,23 @@ public class BookstoreApiSteps {
             title = faker.book().title();
         }
         if ("RANDOM_AUTHOR".equals(author)) {
-            author = faker.book().author(); // Fixed: was setting title instead of author
+            author = faker.book().author();
         }
 
         // Create complete book payload matching the working API structure
         Map<String, Object> body = new HashMap<>();
-        body.put("name", title); // Changed from "title" to "name" to match working API
+        body.put("name", title); // Using "name" instead of "title" to match working API
         body.put("author", author);
-        body.put("published_year", faker.number().numberBetween(1900, 2024)); // Added missing field
-        body.put("book_summary", faker.lorem().sentence(10)); // Added missing field
+        body.put("published_year", faker.number().numberBetween(1900, 2024));
+        body.put("book_summary", faker.lorem().sentence(10));
 
         System.out.println("[STEP] Creating book with name: " + title + ", author: " + author);
         System.out.println("[REQUEST BODY] " + body);
         response = RestAssured.given()
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType("application/json")
+                .header(APIConfig.AUTHORIZATION_HEADER, APIConfig.getBearerToken(accessToken))
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
                 .body(body)
-                .post("/books/");
+                .post(APIConfig.BOOKS_ENDPOINT);
 
         if (response.getStatusCode() == 200) {
             createdBookId = response.jsonPath().getInt("id");
@@ -214,8 +248,8 @@ public class BookstoreApiSteps {
     public void i_get_the_created_book_by_id() {
         System.out.println("[STEP] Getting book by id: " + createdBookId);
         response = RestAssured.given()
-                .header("Authorization", "Bearer " + accessToken)
-                .get("/books/" + createdBookId);
+                .header(APIConfig.AUTHORIZATION_HEADER, APIConfig.getBearerToken(accessToken))
+                .get(APIConfig.BOOKS_ENDPOINT + createdBookId);
     }
 
     @When("I update the book title to {string}")
@@ -225,15 +259,15 @@ public class BookstoreApiSteps {
         }
 
         Map<String, Object> body = new HashMap<>();
-        body.put("name", newTitle); // Changed from "title" to "name" to match API
+        body.put("name", newTitle); // Using "name" instead of "title"
 
         System.out.println("[STEP] Updating book id " + createdBookId + " name to: " + newTitle);
         System.out.println("[REQUEST BODY] " + body);
         response = RestAssured.given()
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType("application/json")
+                .header(APIConfig.AUTHORIZATION_HEADER, APIConfig.getBearerToken(accessToken))
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
                 .body(body)
-                .put("/books/" + createdBookId);
+                .put(APIConfig.BOOKS_ENDPOINT + createdBookId);
     }
 
     @When("I update the book with random title")
@@ -246,8 +280,8 @@ public class BookstoreApiSteps {
     public void i_delete_the_book() {
         System.out.println("[STEP] Deleting book id: " + createdBookId);
         response = RestAssured.given()
-                .header("Authorization", "Bearer " + accessToken)
-                .delete("/books/" + createdBookId);
+                .header(APIConfig.AUTHORIZATION_HEADER, APIConfig.getBearerToken(accessToken))
+                .delete(APIConfig.BOOKS_ENDPOINT + createdBookId);
     }
 
     @When("I get the deleted book by id")
@@ -262,17 +296,17 @@ public class BookstoreApiSteps {
         String author = faker.book().author();
 
         Map<String, Object> body = new HashMap<>();
-        body.put("name", title); // Changed from "title" to "name"
+        body.put("name", title);
         body.put("author", author);
-        body.put("published_year", faker.number().numberBetween(1900, 2024)); // Added missing field
-        body.put("book_summary", faker.lorem().sentence(10)); // Added missing field
+        body.put("published_year", faker.number().numberBetween(1900, 2024));
+        body.put("book_summary", faker.lorem().sentence(10));
 
         System.out.println("[STEP] Creating book without auth - name: " + title + ", author: " + author);
         System.out.println("[REQUEST BODY] " + body);
         response = RestAssured.given()
-                .contentType("application/json")
+                .contentType(APIConfig.CONTENT_TYPE_JSON)
                 .body(body)
-                .post("/books/");
+                .post(APIConfig.BOOKS_ENDPOINT);
     }
 
     // Utility method to get current faker instance (for debugging)

@@ -18,17 +18,15 @@
         <maven.compiler.target>24</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Dependency Versions -->
-        <cucumber.version>7.14.0</cucumber.version>
-        <restassured.version>5.3.2</restassured.version>
-        <testng.version>7.8.0</testng.version>
-        <junit.version>4.13.2</junit.version>
+        <!-- Latest Stable Dependency Versions -->
+        <cucumber.version>7.20.1</cucumber.version>
+        <junit4.version>4.13.2</junit4.version>
+        <restassured.version>5.5.0</restassured.version>
         <faker.version>1.0.2</faker.version>
-        <allure.version>2.24.0</allure.version>
-        <maven.surefire.version>3.1.2</maven.surefire.version>
-        <maven.failsafe.version>3.1.2</maven.failsafe.version>
-        <lombok.version>1.18.28</lombok.version>
-        <jackson.version>2.15.2</jackson.version>
+        <maven.surefire.version>3.3.1</maven.surefire.version>
+        <lombok.version>1.18.34</lombok.version>
+        <jackson.version>2.17.2</jackson.version>
+        <hamcrest.version>2.2</hamcrest.version>
     </properties>
 
     <dependencies>
@@ -43,12 +41,15 @@
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-junit</artifactId>
             <version>${cucumber.version}</version>
+            <scope>test</scope>
         </dependency>
 
+        <!-- JUnit 4 Dependencies -->
         <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-testng</artifactId>
-            <version>${cucumber.version}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit4.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- RestAssured for API Testing -->
@@ -68,20 +69,6 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>xml-path</artifactId>
             <version>${restassured.version}</version>
-        </dependency>
-
-        <!-- TestNG -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>${testng.version}</version>
-        </dependency>
-
-        <!-- JUnit (for Cucumber Runner) -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
         </dependency>
 
         <!-- Faker for Test Data Generation -->
@@ -112,44 +99,31 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Allure Reporting -->
-        <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-cucumber7-jvm</artifactId>
-            <version>${allure.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-rest-assured</artifactId>
-            <version>${allure.version}</version>
-        </dependency>
-
         <!-- Hamcrest for Better Assertions -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
-            <version>2.2</version>
+            <version>${hamcrest.version}</version>
         </dependency>
 
         <!-- Logging Dependencies -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.7</version>
+            <version>2.0.16</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.11</version>
+            <version>1.5.6</version>
         </dependency>
 
         <!-- Apache Commons for Utilities -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.15.0</version>
         </dependency>
     </dependencies>
 
@@ -159,55 +133,24 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>24</source>
                     <target>24</target>
                 </configuration>
             </plugin>
 
-            <!-- Maven Surefire Plugin for Unit Tests -->
+            <!-- Maven Surefire Plugin for Tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.version}</version>
                 <configuration>
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-
-            <!-- Maven Failsafe Plugin for Integration Tests -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${maven.failsafe.version}</version>
-                <configuration>
                     <includes>
-                        <include>**/*Runner.java</include>
                         <include>**/*Test.java</include>
+                        <include>**/*Runner.java</include>
                     </includes>
-                    <systemPropertyVariables>
-                        <cucumber.publish.quiet>true</cucumber.publish.quiet>
-                    </systemPropertyVariables>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Allure Maven Plugin -->
-            <plugin>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-maven</artifactId>
-                <version>2.12.0</version>
-                <configuration>
-                    <reportVersion>${allure.version}</reportVersion>
-                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
+                    <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
             </plugin>
 
@@ -224,45 +167,6 @@
     </build>
 
     <profiles>
-        <!-- Profile for running with JUnit -->
-        <profile>
-            <id>junit</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <configuration>
-                            <includes>
-                                <include>**/TestRunner.java</include>
-                            </includes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- Profile for running with TestNG -->
-        <profile>
-            <id>testng</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <configuration>
-                            <includes>
-                                <include>**/TestNGRunner.java</include>
-                            </includes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
         <!-- Profile for smoke tests -->
         <profile>
             <id>smoke</id>
@@ -270,7 +174,7 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <cucumber.filter.tags>@smoke</cucumber.filter.tags>
@@ -288,7 +192,7 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
                                 <cucumber.filter.tags>@regression</cucumber.filter.tags>
@@ -306,14 +210,13 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <parallel>methods</parallel>
                             <threadCount>4</threadCount>
                             <systemPropertyVariables>
                                 <cucumber.execution.parallel.enabled>true</cucumber.execution.parallel.enabled>
-                                <cucumber.execution.parallel.config.strategy>dynamic
-                                </cucumber.execution.parallel.config.strategy>
+                                <cucumber.execution.parallel.config.strategy>dynamic</cucumber.execution.parallel.config.strategy>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
